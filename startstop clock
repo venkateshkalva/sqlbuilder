@@ -8,7 +8,7 @@
 <body>
 <h1 id="clock">00:00:00</h1>
 <button onclick="startStop()">Start/Stop</button>
-<button onclick="reset()">Reset</button>
+<button onclick="reset()">Reset2</button>
 
 <script>
 let startTime;
@@ -18,25 +18,27 @@ let interval;
 
 // Function to start or stop the stopwatch
 function startStop() {
-    if (running) {
-        clearInterval(interval);
-        running = false;
-        localStorage.setItem('startTime', startTime);
-        localStorage.setItem('elapsedTime', elapsedTime);
-    } else {
+    if (!running) {
         startTime = localStorage.getItem('startTime') ? parseInt(localStorage.getItem('startTime')) : Date.now();
         elapsedTime = localStorage.getItem('elapsedTime') ? parseInt(localStorage.getItem('elapsedTime')) : 0;
         interval = setInterval(updateClock, 1000);
         running = true;
-        updateClock(); // Update clock immediately when starting
+    } else {
+        clearInterval(interval);
+        running = false;
+        localStorage.setItem('startTime', startTime);
+        localStorage.setItem('elapsedTime', elapsedTime);
     }
 }
 
 // Function to update the clock display
 function updateClock() {
-    const currentTime = Date.now();
-    elapsedTime += (currentTime - startTime);
-    startTime = currentTime;
+    
+        const currentTime = Date.now();
+        elapsedTime += (currentTime - startTime);
+        startTime = currentTime;
+    
+    
 
     const hours = Math.floor(elapsedTime / (1000 * 60 * 60));
     const minutes = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
