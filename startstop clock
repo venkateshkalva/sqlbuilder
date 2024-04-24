@@ -1,99 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Start Stop Timer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Stop Timer</title>
 </head>
+
 <body>
-  <h1 id="timer">00:00:00</h1>
-  <button id="startStopBtn">Start</button>
-  <button id="resetBtn">Reset</button>
+    <h1 id="timer">00:00:00</h1>
+    <button id="startStopBtn">Start</button>
+    <button id="resetBtn">Reset</button>
+    <script>
+       // Function to start the clock
+function startClock(hours, minutes) {
+    let currentHours = hours;
+    let currentMinutes = minutes;
+    let currentSeconds = 0;
+    let colonVisible = true; 
+    let interval = setInterval(() => {
+        currentSeconds++;
+        if (currentSeconds === 60) {
+            currentMinutes ++;
+            currentSeconds = 0 ;
+            //currentHours++;
+            if(currentMinutes ===60){
+                currentHours++;
+                currentMinutes = 0;
+            }
+            if (currentHours === 24) {
+                currentHours = 0; // Reset hours to 0 after 24 hours
+            }
+        }
+        console.log(`${currentHours}${colonVisible ? ':' : ' '}${currentMinutes < 10 ? '0' : ''}${currentMinutes}`);
+        colonVisible = !colonVisible; // Toggle visibility
+    }, 1000); // Increment every second
 
-  <script>
-    let timerInterval;
-let startTime;
-let elapsedTime = 0;
-let isRunning = false;
-
-// Load the timer state from localStorage when the page loads
-window.addEventListener('load', () => {
-  const savedStartTime = localStorage.getItem('startTime');
-  const savedElapsedTime = localStorage.getItem('elapsedTime');
-  if (savedStartTime) {
-    startTime = parseInt(savedStartTime);
-    if (localStorage.getItem('isRunning') === 'true') {
-      isRunning = true;
-      elapsedTime = savedElapsedTime ? parseInt(savedElapsedTime) : 0;
-      startTimer();
-    } else {
-      elapsedTime = savedElapsedTime ? parseInt(savedElapsedTime) : 0;
-      updateTime();
+    // Function to stop the clock
+    function stopClock() {
+        clearInterval(interval);
     }
-  }
-});
 
-function startStopTimer() {
-  if (!isRunning) {
-    startTimer();
-  } else {
-    stopTimer();
-  }
+    return stopClock; // Return the function to stop the clock
 }
 
-function startTimer() {
-  startTime = Date.now() - elapsedTime;
-  localStorage.setItem('startTime', startTime);
-  timerInterval = setInterval(updateTime, 1000);
-  document.getElementById("startStopBtn").textContent = "Stop";
-  isRunning = true;
-  localStorage.setItem('isRunning', 'true');
-}
+// Example usage:
+let stop = startClock(23, 59); // Start the clock at 10:30
+// The clock will keep running until you call stop() to stop it
+//stop(); // Call this to stop the clock
 
-function stopTimer() {
-  clearInterval(timerInterval);
-  document.getElementById("startStopBtn").textContent = "Start";
-  isRunning = false;
-  localStorage.setItem('isRunning', 'false');
-  localStorage.setItem('elapsedTime', elapsedTime);
-}
-
-function updateTime() {
-  if (isRunning) {
-    elapsedTime = Date.now() - startTime;
-    localStorage.setItem('elapsedTime', elapsedTime);
-  }
-  
-  const elapsedTimeInSeconds = Math.floor(elapsedTime / 1000);
-  const hours = Math.floor(elapsedTimeInSeconds / 3600);
-  const minutes = Math.floor((elapsedTimeInSeconds % 3600) / 60);
-  const seconds = elapsedTimeInSeconds % 60;
-  document.getElementById("timer").textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
-
-function resetTimer() {
-  clearInterval(timerInterval);
-  isRunning = false;
-  elapsedTime = 0;
-  localStorage.removeItem('startTime');
-  localStorage.removeItem('elapsedTime');
-  document.getElementById("timer").textContent = "00:00:00";
-  document.getElementById("startStopBtn").textContent = "Start";
-}
-
-document.getElementById("startStopBtn").addEventListener("click", startStopTimer);
-document.getElementById("resetBtn").addEventListener("click", resetTimer);
-
-// Save timer state when window is closed or refreshed
-window.addEventListener('beforeunload', () => {
-  if (isRunning) {
-    elapsedTime = Date.now() - startTime;
-    localStorage.setItem('elapsedTime', elapsedTime);
-  }
-});
-
-
-
-  </script>
+        
+    </script>
 </body>
+
 </html>
