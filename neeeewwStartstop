@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Stop Timer</title>
+</head>
+
+<body>
+    <div id="clockDisplay"></div>
+    <button id="startStopButton">Start</button>
+    
+    <script>
+        let intervalId;
+        let clockRunning = false;
+        
+        // Function to start the clock
+        function startClock(hours, minutes) {
+            let currentHours = hours;
+            let currentMinutes = minutes;
+            let currentSeconds = 0;
+            let colonVisible = true; 
+        
+            // Update the clock display
+            function updateClock() {
+                currentSeconds++;
+                if (currentSeconds === 60) {
+                    currentMinutes ++;
+                    currentSeconds = 0 ;
+                    if(currentMinutes ===60){
+                        currentHours++;
+                        currentMinutes = 0;
+                    }
+                    if (currentHours === 24) {
+                        currentHours = 0; // Reset hours to 0 after 24 hours
+                    }
+                }
+                document.getElementById('clockDisplay').innerText = `${currentHours}${colonVisible ? ':' : ' '}${currentMinutes < 10 ? '0' : ''}${currentMinutes}`;
+                colonVisible = !colonVisible; // Toggle visibility
+            }
+        
+            // Start the clock
+            function start() {
+                intervalId = setInterval(updateClock, 1000); // Increment every second
+                clockRunning = true;
+                document.getElementById('startStopButton').innerText = 'Stop';
+            }
+        
+            // Stop the clock
+            function stop() {
+                clearInterval(intervalId);
+                clockRunning = false;
+                document.getElementById('startStopButton').innerText = 'Start';
+            }
+        
+            // Toggle start/stop
+            function toggle() {
+                if (clockRunning) {
+                    stop();
+                } else {
+                    start();
+                }
+            }
+        
+            return { toggle }; // Return toggle function
+        }
+        
+        // Initialize clock with start/stop button
+        document.addEventListener('DOMContentLoaded', function () {
+            let clock;
+            document.getElementById('startStopButton').addEventListener('click', function () {
+                if (!clock) {
+                    clock = startClock(12, 59); // Start the clock at 12:59
+                }
+                clock.toggle();
+            });
+        });
+        
+    </script>
+</body>
+
+</html>
