@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Weekly Task Card</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -44,7 +45,7 @@
     th, td {
         padding: 10px;
         text-align: center;
-        min-width: 100px; /* Minimum width to ensure the content fits */
+        min-width: 100px;
     }
     th {
         border-bottom: 2px solid #ccc;
@@ -75,18 +76,33 @@
         border-radius: 4px;
         cursor: pointer;
         color: white;
+        background-color: transparent;
     }
-    .start-button {
-        background-color: #28a745;
+    .play-button .fa-play {
+        color: #28a745;
     }
-    .start-button:hover {
-        background-color: #218838;
+    .play-button:hover .fa-play {
+        color: #218838;
     }
-    .stop-button {
-        background-color: #dc3545;
+    .pause-button .fa-pause {
+        color: #dc3545;
     }
-    .stop-button:hover {
-        background-color: #c82333;
+    .pause-button:hover .fa-pause {
+        color: #c82333;
+    }
+    .deploy-button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        background-color: transparent;
+        display: none; /* Hidden by default */
+    }
+    .deploy-button .fa-check {
+        color: #007bff;
+    }
+    .deploy-button:hover .fa-check {
+        color: #0056b3;
     }
     .release-button {
         padding: 8px 12px;
@@ -112,6 +128,12 @@
     .star.active {
         color: gold;
     }
+    .client-info {
+        text-align: left;
+    }
+    .client-info > div {
+        margin-top: 5px;
+    }
 </style>
 </head>
 <body>
@@ -128,7 +150,7 @@
             <thead id="tableHead">
                 <tr>
                     <th>Star</th>
-                    <th>Task</th>
+                    <th>Client</th>
                     <th>Sun</th>
                     <th>Mon</th>
                     <th>Tue</th>
@@ -151,90 +173,47 @@ let currentDate = new Date();
 let sampleData = [];
 
 async function fetchData() {
-    // Simulated fetch call
-    const response = await fetch('https://api.example.com/tasks', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ date: currentDate }),
-    });
-    const data = await response.json();
-    return data;
+    try {
+        const response = await fetch('https://api.example.com/tasks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ date: currentDate }),
+        });
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        return null;
+    }
 }
 
 async function navigateWeek(direction) {
     currentDate.setDate(currentDate.getDate() + direction * 7);
-    // Simulated API response
-    sampleData = {
-        "tasks": [
-            {
-                "name": "Task 44",
-                "hours": [1, 9, 3, 14, 5, 16, 7],
-                "activity": true,
-                "activityTime": "9h 20m",
-                "starred": false,
-                "status": [100, 200, 300, 100, 200, 300, 100]
-            },
-            {
-                "name": "Task 222",
-                "hours": [1, 12, 3, 4, 5, 16, 7],
-                "activity": false,
-                "activityTime": "8h 45m",
-                "starred": true,
-                "status": [200, 100, 200, 300, 100, 200, 300]
-            },
-            {
-                "name": "Task 555",
-                "hours": [2, 3, 1, 4, 6, 8, 5],
-                "activity": true,
-                "activityTime": "10h 0m",
-                "starred": false,
-                "status": [300, 100, 200, 300, 100, 200, 300]
-            }
-        ]
-    };
+    sampleData = await fetchData() || getSampleData();
     updateCard();
 }
 
 async function updateDate() {
     const selectedDate = document.getElementById('calendar').value;
     currentDate = new Date(selectedDate);
-    // Simulated API response
-    sampleData = {
-        "tasks": [
-            {
-                "name": "Task 343",
-                "hours": [1, 2.3, 3, 4, 5.6, 6, 7.5],
-                "activity": true,
-                "activityTime": "7h 30m",
-                "starred": false,
-                "status": [100, 200, 300, 100, 200, 300, 100]
-            },
-            {
-                "name": "Task 343433",
-                "hours": [1, 2, 3.5, 4, 5, 6, 7],
-                "activity": false,
-                "activityTime": "6h 15m",
-                "starred": true,
-                "status": [200, 300, 100, 200, 300, 100, 200]
-            },
-            {
-                "name": "Task 999",
-                "hours": [0, 1, 2, 3, 4, 5, 6],
-                "activity": true,
-                "activityTime": "5h 45m",
-                "starred": false,
-                "status": [300, 100, 200, 300, 100, 200, 300]
-            }
-        ]
-    };
+    sampleData = await fetchData() || getSampleData();
     updateCard();
 }
 
-function formatDate(date) {
-    const options = { month: '2-digit', day: '2-digit' };
-    return date.toLocaleDateString('en-US', options);
+function formatDate(date, format) {
+    const options = { year: 'numeric', month: 'short', day: '2-digit' };
+    switch(format) {
+        case 'full':
+            return date.toLocaleDateString('en-US', options).replace(/,/g, '');
+        case 'short':
+            return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
+        case 'fullShortYear':
+            return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+        default:
+            return date.toLocaleDateString('en-US', options);
+    }
 }
 
 function updateHours() {
@@ -242,20 +221,113 @@ function updateHours() {
     // Add your logic to handle the updated hours
 }
 
-function toggleActivity(button, timeSpan) {
-    if (button.classList.contains('start-button')) {
-        button.textContent = 'Stop';
-        button.classList.remove('start-button');
-        button.classList.add('stop-button');
+function handleHoursInputClick(event) {
+    const input = event.target;
+    const clientId = input.dataset.clientId;
+    const matterId = input.dataset.matterId;
+    const taskId = input.dataset.taskId;
+    const subTaskId = input.dataset.subTaskId;
+    const timeEntryId = input.dataset.timeEntryId;
+    const hours = input.value;
+    const date = input.dataset.date;
+    callFetchApi(clientId, matterId, taskId, subTaskId, timeEntryId, hours, date);
+}
+
+function callFetchApi(clientId, matterId, taskId, subTaskId, timeEntryId, hours, date) {
+    const payload = {
+        clientId,
+        matterId,
+        taskId,
+        subTaskId,
+        timeEntryId,
+        hours,
+        date
+    };
+
+    console.log('Calling API with payload:', payload);
+
+    fetch('https://api.example.com/update-hours', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('API response:', data);
+        // Handle the response as needed
+    })
+    .catch(error => {
+        console.error('Error calling API:', error);
+    });
+}
+
+function toggleActivity(button, timeSpan, deployButton) {
+    if (button.classList.contains('play-button')) {
+        button.innerHTML = '<i class="fas fa-pause"></i>';
+        button.classList.remove('play-button');
+        button.classList.add('pause-button');
     } else {
-        button.textContent = 'Start';
-        button.classList.remove('stop-button');
-        button.classList.add('start-button');
+        button.innerHTML = '<i class="fas fa-play"></i>';
+        button.classList.remove('pause-button');
+        button.classList.add('play-button');
+
+        timeSpan.textContent = timeSpan.dataset.originalTime;
+        deployButton.style.display = 'none';
     }
+}
+
+function showDeployButton(timeSpan, deployButton) {
+    deployButton.style.display = 'inline';
+    timeSpan.dataset.originalTime = timeSpan.textContent;
+    const hrs = timeSpan.dataset.hrsClocked;
+    const mins = timeSpan.dataset.minsClocked;
+    timeSpan.textContent = `${hrs > 0 ? hrs + 'h ' : ''}${mins > 0 ? mins + 'm' : ''}`;
 }
 
 function toggleStar(star) {
     star.classList.toggle('active');
+}
+
+function getSampleData() {
+    return [
+        {
+            clientId: 68,
+            clientName: "capitalOne",
+            matterId: 76,
+            matterName: "test3",
+            taskID: 55,
+            taskName: "ftetdf",
+            subTaskID: 4,
+            subTaskName: "bbbjd",
+            starred: true,
+            sun_HR: 0,
+            mon_HR: 5,
+            tue_HR: 6.5,
+            wed_HR: 0,
+            thu_HR: 7,
+            fr_HR: 3,
+            sat_HR: 3.3,
+            sun_StatusID: 0,
+            mon_StatusID: 200,
+            tue_StatusID: 300,
+            wed_StatusID: 0,
+            thu_StatusID: 100,
+            fri_StatusID: 200,
+            sat_StatusID: 300,
+            Sun_TimeEntryID: 0,
+            mon_TimeEntryID: 4,
+            tue_TimeEntryID: 5,
+            wed_TimeEntryID: 0,
+            thu_TimeEntryID: 0,
+            fri_TimeEntryID: 22,
+            sat_TimeEntryID: 45,
+            startStopFlag: true,
+            hrsClocked: 5,
+            minsClocked: 35
+        }
+    ];
 }
 
 async function updateCard() {
@@ -266,7 +338,7 @@ async function updateCard() {
     endOfWeek.setDate(startOfWeek.getDate() + 6);
 
     const weekRange = document.getElementById('weekRange');
-    weekRange.textContent = `${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`;
+    weekRange.textContent = `${formatDate(startOfWeek, 'full')} - ${formatDate(endOfWeek, 'full')}`;
 
     const tableHead = document.getElementById('tableHead').rows[0];
     const taskTableBody = document.querySelector('#taskTable tbody');
@@ -277,11 +349,12 @@ async function updateCard() {
         const date = new Date(startOfWeek);
         date.setDate(date.getDate() + (j - 2));
         const header = tableHead.cells[j];
-        header.textContent = `${date.toLocaleDateString('en-US', { weekday: 'short' })} ${formatDate(date)}`;
+        header.textContent = `${date.toLocaleDateString('en-US', { weekday: 'short' })} ${formatDate(date, 'short')}`;
     }
 
     // Create task rows
-    sampleData.tasks.forEach((task, i) => {
+    sampleData.forEach(task => {
+        // Combined row
         const row = document.createElement('tr');
 
         const starCell = document.createElement('td');
@@ -295,17 +368,41 @@ async function updateCard() {
         starCell.appendChild(starIcon);
         row.appendChild(starCell);
 
-        const taskCell = document.createElement('td');
-        taskCell.textContent = task.name;
-        row.appendChild(taskCell);
+        const clientCell = document.createElement('td');
+        clientCell.classList.add('client-info');
+        clientCell.innerHTML = `
+            <div><strong>Client:</strong> ${task.clientName}</div>
+            <div><strong>Matter:</strong> ${task.matterName}</div>
+            <div><strong>Task:</strong> ${task.taskName}</div>
+            <div><strong>Subtask:</strong> ${task.subTaskName}</div>
+        `;
+        row.appendChild(clientCell);
 
-        task.hours.forEach((hour, index) => {
+        const hours = [
+            { day: 'sun', value: task.sun_HR, status: task.sun_StatusID, timeEntryId: task.Sun_TimeEntryID },
+            { day: 'mon', value: task.mon_HR, status: task.mon_StatusID, timeEntryId: task.mon_TimeEntryID },
+            { day: 'tue', value: task.tue_HR, status: task.tue_StatusID, timeEntryId: task.tue_TimeEntryID },
+            { day: 'wed', value: task.wed_HR, status: task.wed_StatusID, timeEntryId: task.wed_TimeEntryID },
+            { day: 'thu', value: task.thu_HR, status: task.thu_StatusID, timeEntryId: task.thu_TimeEntryID },
+            { day: 'fri', value: task.fr_HR, status: task.fri_StatusID, timeEntryId: task.fri_TimeEntryID },
+            { day: 'sat', value: task.sat_HR, status: task.sat_StatusID, timeEntryId: task.sat_TimeEntryID }
+        ];
+
+        hours.forEach((hour, index) => {
             const cell = document.createElement('td');
             const input = document.createElement('input');
             input.type = 'text';
-            input.value = hour;
-            input.classList.add(`status-${task.status[index]}`);
-            input.onchange = updateHours;
+            input.value = hour.value;
+            input.classList.add(`status-${hour.status}`);
+            input.dataset.timeEntryId = hour.timeEntryId; // Assign timeEntryId to input
+            input.dataset.clientId = task.clientId;
+            input.dataset.matterId = task.matterId;
+            input.dataset.taskId = task.taskID;
+            input.dataset.subTaskId = task.subTaskID;
+            const cellDate = new Date(startOfWeek);
+            cellDate.setDate(startOfWeek.getDate() + index);
+            input.dataset.date = formatDate(cellDate, 'fullShortYear');
+            input.onclick = handleHoursInputClick;
             cell.appendChild(input);
             row.appendChild(cell);
         });
@@ -314,14 +411,33 @@ async function updateCard() {
         const activityDiv = document.createElement('div');
         activityDiv.classList.add('activity-info');
         const activityButton = document.createElement('button');
-        activityButton.textContent = task.activity ? 'Stop' : 'Start';
+        activityButton.innerHTML = task.startStopFlag ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
         activityButton.classList.add('activity-button');
-        activityButton.classList.add(task.activity ? 'stop-button' : 'start-button');
-        activityButton.onclick = () => toggleActivity(activityButton, activityDiv.querySelector('span'));
+        activityButton.classList.add(task.startStopFlag ? 'pause-button' : 'play-button');
         const activityTime = document.createElement('span');
-        activityTime.textContent = task.activityTime;
+        activityTime.textContent = `${task.hrsClocked > 0 ? task.hrsClocked + 'h ' : ''}${task.minsClocked > 0 ? task.minsClocked + 'm' : ''}`;
+        activityTime.dataset.hrsClocked = task.hrsClocked;
+        activityTime.dataset.minsClocked = task.minsClocked;
         activityDiv.appendChild(activityButton);
         activityDiv.appendChild(activityTime);
+
+        const deployButton = document.createElement('button');
+        deployButton.innerHTML = '<i class="fas fa-check"></i>';
+        deployButton.classList.add('deploy-button');
+        deployButton.id = 'releaseGridLevelTE';
+        deployButton.onclick = () => {
+            // Add your deploy logic here
+            console.log('Deploy clicked for:', task);
+        };
+
+        activityButton.onclick = () => {
+            toggleActivity(activityButton, activityTime, deployButton);
+            if (activityButton.classList.contains('pause-button')) {
+                showDeployButton(activityTime, deployButton);
+            }
+        };
+
+        activityDiv.appendChild(deployButton);
         activityCell.appendChild(activityDiv);
         row.appendChild(activityCell);
 
@@ -335,14 +451,16 @@ async function updateCard() {
     const emptyStarCell = document.createElement('td');
     totalHoursRow.appendChild(emptyStarCell);
 
-    const workedHoursCell = document.createElement('td');
-    workedHoursCell.textContent = 'Worked Hours';
-    totalHoursRow.appendChild(workedHoursCell);
+    const totalHoursLabelCell = document.createElement('td');
+    totalHoursLabelCell.textContent = 'Worked Hours';
+    totalHoursRow.appendChild(totalHoursLabelCell);
 
     for (let j = 0; j < 7; j++) {
         let totalHours = 0;
-        sampleData.tasks.forEach(task => {
-            totalHours += task.hours[j] || 0;
+        sampleData.forEach(task => {
+            totalHours += [
+                task.sun_HR, task.mon_HR, task.tue_HR, task.wed_HR, task.thu_HR, task.fr_HR, task.sat_HR
+            ][j] || 0;
         });
         const totalHoursCell = document.createElement('td');
         totalHoursCell.textContent = totalHours;
@@ -361,35 +479,7 @@ async function updateCard() {
 
 // Initialize card with current date
 (async function() {
-    // Simulated initial API response
-    sampleData = {
-        "tasks": [
-            {
-                "name": "Task 1",
-                "hours": [1, 2, 3, 4, 5, 6, 7],
-                "activity": true,
-                "activityTime": "5h 30m",
-                "starred": false,
-                "status": [100, 200, 300, 100, 200, 300, 100]
-            },
-            {
-                "name": "Task 2",
-                "hours": [1, 2, 3, 4, 5, 6, 7],
-                "activity": false,
-                "activityTime": "4h 45m",
-                "starred": true,
-                "status": [200, 300, 100, 200, 300, 100, 200]
-            },
-            {
-                "name": "Task 3",
-                "hours": [1, 2, 3, 4, 5, 6, 7],
-                "activity": true,
-                "activityTime": "6h 30m",
-                "starred": false,
-                "status": [300, 100, 200, 300, 100, 200, 300]
-            }
-        ]
-    };
+    sampleData = getSampleData();
     updateCard();
 })();
 </script>
