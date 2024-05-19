@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Task Card</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .card {
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 80%;
+        max-width: 800px;
+        display: flex;
+        flex-direction: column;
+    }
+    .navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .calendar {
+        margin-bottom: 20px;
+    }
+    .table-container {
+        display: flex;
+        flex-direction: column;
+        overflow-x: auto;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        padding: 10px;
+        text-align: center;
+        min-width: 100px; /* Minimum width to ensure the content fits */
+    }
+    th {
+        border-bottom: 2px solid #ccc;
+    }
+    .totalHours {
+        font-weight: bold;
+    }
+    .worked-hours-row td {
+        border-top: 2px solid #ccc;
+    }
+    input[type="text"] {
+        width: 50%;
+        text-align: center;
+        box-sizing: border-box;
+    }
+    .status-100 {
+        border: 2px solid rgb(112, 34, 34) !important;
+    }
+    .status-200 {
+        border: 2px solid rgb(136, 180, 136) !important;
+    }
+    .status-300 {
+        border: 2px solid grey !important;
+    }
+    .activity-button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        color: white;
+    }
+    .start-button {
+        background-color: #28a745;
+    }
+    .start-button:hover {
+        background-color: #218838;
+    }
+    .stop-button {
+        background-color: #dc3545;
+    }
+    .stop-button:hover {
+        background-color: #c82333;
+    }
+    .release-button {
+        padding: 8px 12px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .release-button:hover {
+        background-color: #0056b3;
+    }
+    .activity-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .star {
+        cursor: pointer;
+        font-size: 20px;
+        color: gray;
+    }
+    .star.active {
+        color: gold;
+    }
+</style>
+</head>
+<body>
+
+<div class="card">
+    <div class="navigation">
+        <button onclick="navigateWeek(-1)">Previous Week</button>
+        <span id="weekRange"></span>
+        <button onclick="navigateWeek(1)">Next Week</button>
+    </div>
+    <input type="date" id="calendar" class="calendar" onchange="updateDate()">
+    <div class="table-container">
+        <table id="taskTable">
+            <thead id="tableHead">
+                <tr>
+                    <th>Star</th>
+                    <th>Task</th>
+                    <th>Sun</th>
+                    <th>Mon</th>
+                    <th>Tue</th>
+                    <th>Wed</th>
+                    <th>Thu</th>
+                    <th>Fri</th>
+                    <th>Sat</th>
+                    <th>Activity</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamic content will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+let currentDate = new Date();
+let sampleData = [];
+
+async function fetchData() {
+    // Simulated fetch call
+    const response = await fetch('https://api.example.com/tasks', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ date: currentDate }),
+    });
+    const data = await response.json();
+    return data;
+}
+
+async function navigateWeek(direction) {
+    currentDate.setDate(currentDate.getDate() + direction * 7);
+    // Simulated API response
+    sampleData = {
+        "tasks": [
+            {
+                "name": "Task 44",
+                "hours": [1, 9, 3, 14, 5, 16, 7],
+                "activity": true,
+                "activityTime": "9h 20m",
+                "starred": false,
+                "status": [100, 200, 300, 100, 200, 300, 100]
+            },
+            {
+                "name": "Task 222",
+                "hours": [1, 12, 3, 4, 5, 16, 7],
+                "activity": false,
+                "activityTime": "8h 45m",
+                "starred": true,
+                "status": [200, 100, 200, 300, 100, 200, 300]
+            },
+            {
+                "name": "Task 555",
+                "hours": [2, 3, 1, 4, 6, 8, 5],
+                "activity": true,
+                "activityTime": "10h 0m",
+                "starred": false,
+                "status": [300, 100, 200, 300, 100, 200, 300]
+            }
+        ]
+    };
+    updateCard();
+}
+
+async function updateDate() {
+    const selectedDate = document.getElementById('calendar').value;
+    currentDate = new Date(selectedDate);
+    // Simulated API response
+    sampleData = {
+        "tasks": [
+            {
+                "name": "Task 343",
+                "hours": [1, 2.3, 3, 4, 5.6, 6, 7.5],
+                "activity": true,
+                "activityTime": "7h 30m",
+                "starred": false,
+                "status": [100, 200, 300, 100, 200, 300, 100]
+            },
+            {
+                "name": "Task 343433",
+                "hours": [1, 2, 3.5, 4, 5, 6, 7],
+                "activity": false,
+                "activityTime": "6h 15m",
+                "starred": true,
+                "status": [200, 300, 100, 200, 300, 100, 200]
+            },
+            {
+                "name": "Task 999",
+                "hours": [0, 1, 2, 3, 4, 5, 6],
+                "activity": true,
+                "activityTime": "5h 45m",
+                "starred": false,
+                "status": [300, 100, 200, 300, 100, 200, 300]
+            }
+        ]
+    };
+    updateCard();
+}
+
+function formatDate(date) {
+    const options = { month: '2-digit', day: '2-digit' };
+    return date.toLocaleDateString('en-US', options);
+}
+
+function updateHours() {
+    console.log('Hours updated!');
+    // Add your logic to handle the updated hours
+}
+
+function toggleActivity(button, timeSpan) {
+    if (button.classList.contains('start-button')) {
+        button.textContent = 'Stop';
+        button.classList.remove('start-button');
+        button.classList.add('stop-button');
+    } else {
+        button.textContent = 'Start';
+        button.classList.remove('stop-button');
+        button.classList.add('start-button');
+    }
+}
+
+function toggleStar(star) {
+    star.classList.toggle('active');
+}
+
+async function updateCard() {
+    const startOfWeek = new Date(currentDate);
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+    const weekRange = document.getElementById('weekRange');
+    weekRange.textContent = `${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`;
+
+    const tableHead = document.getElementById('tableHead').rows[0];
+    const taskTableBody = document.querySelector('#taskTable tbody');
+    taskTableBody.innerHTML = ''; // Clear existing content
+
+    // Update table headers
+    for (let j = 2; j <= 8; j++) {
+        const date = new Date(startOfWeek);
+        date.setDate(date.getDate() + (j - 2));
+        const header = tableHead.cells[j];
+        header.textContent = `${date.toLocaleDateString('en-US', { weekday: 'short' })} ${formatDate(date)}`;
+    }
+
+    // Create task rows
+    sampleData.tasks.forEach((task, i) => {
+        const row = document.createElement('tr');
+
+        const starCell = document.createElement('td');
+        const starIcon = document.createElement('span');
+        starIcon.innerHTML = '★';
+        starIcon.classList.add('star');
+        if (task.starred) {
+            starIcon.classList.add('active');
+        }
+        starIcon.onclick = () => toggleStar(starIcon);
+        starCell.appendChild(starIcon);
+        row.appendChild(starCell);
+
+        const taskCell = document.createElement('td');
+        taskCell.textContent = task.name;
+        row.appendChild(taskCell);
+
+        task.hours.forEach((hour, index) => {
+            const cell = document.createElement('td');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = hour;
+            input.classList.add(`status-${task.status[index]}`);
+            input.onchange = updateHours;
+            cell.appendChild(input);
+            row.appendChild(cell);
+        });
+
+        const activityCell = document.createElement('td');
+        const activityDiv = document.createElement('div');
+        activityDiv.classList.add('activity-info');
+        const activityButton = document.createElement('button');
+        activityButton.textContent = task.activity ? 'Stop' : 'Start';
+        activityButton.classList.add('activity-button');
+        activityButton.classList.add(task.activity ? 'stop-button' : 'start-button');
+        activityButton.onclick = () => toggleActivity(activityButton, activityDiv.querySelector('span'));
+        const activityTime = document.createElement('span');
+        activityTime.textContent = task.activityTime;
+        activityDiv.appendChild(activityButton);
+        activityDiv.appendChild(activityTime);
+        activityCell.appendChild(activityDiv);
+        row.appendChild(activityCell);
+
+        taskTableBody.appendChild(row);
+    });
+
+    // Create a row for total worked hours
+    const totalHoursRow = document.createElement('tr');
+    totalHoursRow.classList.add('worked-hours-row');
+
+    const emptyStarCell = document.createElement('td');
+    totalHoursRow.appendChild(emptyStarCell);
+
+    const workedHoursCell = document.createElement('td');
+    workedHoursCell.textContent = 'Worked Hours';
+    totalHoursRow.appendChild(workedHoursCell);
+
+    for (let j = 0; j < 7; j++) {
+        let totalHours = 0;
+        sampleData.tasks.forEach(task => {
+            totalHours += task.hours[j] || 0;
+        });
+        const totalHoursCell = document.createElement('td');
+        totalHoursCell.textContent = totalHours;
+        totalHoursRow.appendChild(totalHoursCell);
+    }
+
+    const totalHoursActivityCell = document.createElement('td');
+    const releaseButton = document.createElement('button');
+    releaseButton.textContent = 'Release';
+    releaseButton.classList.add('release-button');
+    totalHoursActivityCell.appendChild(releaseButton);
+    totalHoursRow.appendChild(totalHoursActivityCell);
+
+    taskTableBody.appendChild(totalHoursRow);
+}
+
+// Initialize card with current date
+(async function() {
+    // Simulated initial API response
+    sampleData = {
+        "tasks": [
+            {
+                "name": "Task 1",
+                "hours": [1, 2, 3, 4, 5, 6, 7],
+                "activity": true,
+                "activityTime": "5h 30m",
+                "starred": false,
+                "status": [100, 200, 300, 100, 200, 300, 100]
+            },
+            {
+                "name": "Task 2",
+                "hours": [1, 2, 3, 4, 5, 6, 7],
+                "activity": false,
+                "activityTime": "4h 45m",
+                "starred": true,
+                "status": [200, 300, 100, 200, 300, 100, 200]
+            },
+            {
+                "name": "Task 3",
+                "hours": [1, 2, 3, 4, 5, 6, 7],
+                "activity": true,
+                "activityTime": "6h 30m",
+                "starred": false,
+                "status": [300, 100, 200, 300, 100, 200, 300]
+            }
+        ]
+    };
+    updateCard();
+})();
+</script>
+
+</body>
+</html>
