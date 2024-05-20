@@ -1,7 +1,7 @@
 function getStartOfWeek(date) {
     const startOfWeek = new Date(date);
     const day = startOfWeek.getDay();
-    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 0); // Adjust when day is Sunday
+    const diff = startOfWeek.getDate() - day; // Adjust when day is Sunday
     startOfWeek.setDate(diff);
     startOfWeek.setHours(0, 0, 0, 0); // Reset time to midnight
     return startOfWeek;
@@ -14,13 +14,10 @@ async function navigateWeek(direction) {
     updateCard();
 }
 
-
-(async function() {
+async function updateDate() {
+    const selectedDate = document.getElementById('calendar').value;
+    currentDate = new Date(selectedDate);
     currentDate = getStartOfWeek(currentDate);
-    sampleData = getSampleData();
+    sampleData = await fetchData() || getSampleData();
     updateCard();
-
-    // Add event listeners for navigation buttons
-    document.getElementById('prevWeek').addEventListener('click', () => navigateWeek(-1));
-    document.getElementById('nextWeek').addEventListener('click', () => navigateWeek(1));
-})();
+}
