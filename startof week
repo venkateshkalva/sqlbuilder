@@ -1,0 +1,15 @@
+function getStartOfWeek(date) {
+    const startOfWeek = new Date(date);
+    const day = startOfWeek.getDay();
+    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 0); // Adjust when day is Sunday
+    startOfWeek.setDate(diff);
+    startOfWeek.setHours(0, 0, 0, 0); // Reset time to midnight
+    return startOfWeek;
+}
+
+async function navigateWeek(direction) {
+    currentDate.setDate(currentDate.getDate() + direction * 7);
+    currentDate = getStartOfWeek(currentDate);
+    sampleData = await fetchData() || getSampleData();
+    updateCard();
+}
