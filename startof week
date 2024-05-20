@@ -13,3 +13,14 @@ async function navigateWeek(direction) {
     sampleData = await fetchData() || getSampleData();
     updateCard();
 }
+
+
+(async function() {
+    currentDate = getStartOfWeek(currentDate);
+    sampleData = getSampleData();
+    updateCard();
+
+    // Add event listeners for navigation buttons
+    document.getElementById('prevWeek').addEventListener('click', () => navigateWeek(-1));
+    document.getElementById('nextWeek').addEventListener('click', () => navigateWeek(1));
+})();
