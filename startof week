@@ -21,3 +21,18 @@ async function updateDate() {
     sampleData = await fetchData() || getSampleData();
     updateCard();
 }
+
+
+async function updateCard() {
+    const startOfWeek = getStartOfWeek(currentDate);
+
+
+(async function() {
+    currentDate = getStartOfWeek(currentDate);
+    sampleData = getSampleData();
+    updateCard();
+
+    // Add event listeners for navigation buttons
+    document.getElementById('prevWeek').addEventListener('click', () => navigateWeek(-1));
+    document.getElementById('nextWeek').addEventListener('click', () => navigateWeek(1));
+})();
