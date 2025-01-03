@@ -1,4 +1,140 @@
- $('#example tbody').on('click', '.toggle-details', function () {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataTable Example</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <style>
+        .nested-table {
+            margin-left: 30px;
+            border-collapse: collapse;
+        }
+        .nested-table td, .nested-table th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+    <table id="example" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Latest Date</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        // Sample JSON data
+        const jsonData = [
+            { email: "test@gmail.com", subject: "this is a test1", date: "12/22/2024", status: "delivered" },
+            { email: "test@gmail.com", subject: "this is a test1", date: "12/23/2024", status: "deferred" },
+            { email: "test@gmail.com", subject: "this is a test1", date: "10/02/2024", status: "deferred" },
+            { email: "test@gmail.com", subject: "this is a test1", date: "09/12/2024", status: "deferred" },
+            { email: "test@gmail.com", subject: "this is a test1", date: "10/12/2024", status: "opened" },
+            { email: "test@gmail.com", subject: "this is a test2", date: "08/12/2024", status: "opened" },
+            { email: "test@gmail.com", subject: "this is a test2", date: "07/13/2024", status: "opened " },
+            { email: "test@gmail.com", subject: "this is a test2", date: "11/14/2024", status: "opened" },
+            { email: "test@gmail.com", subject: "this is a test2", date: "11/15/2024", status: "opened" },
+            { email: "test@gmail.com", subject: "this is a test2", date: "11/16/2024", status: "deferred " },
+            { email: "test@gmail.com", subject: "this is a test3", date: "11/17/2024", status: "deferred " },
+			{ email: "test@gmail.com", subject: "this is a test3", date: "11/19/2024", status: "deferred " },
+			{ email: "test@gmail.com", subject: "this is a test3", date: "11/23/2024", status: "deferred " },
+			{ email: "test@gmail.com", subject: "this is a test3", date: "11/20/2024", status: "deferred " },
+			{ email: "test@gmail.com", subject: "this is a test3", date: "11/17/2024", status: "opened " },
+			{ email: "test@gmail.com", subject: "this is a test3", date: "11/17/2024", status: "opened " },
+			{ email: "test@gmail.com", subject: "this is a test4", date: "11/17/2024", status: "deferred " },
+			{ email: "test@gmail.com", subject: "this is a test3", date: "11/17/2024", status: "delivered " }
+        ];
+
+        // Group data by subject and status
+        const groupedData = jsonData.reduce((acc, item) => {
+            const key = `${item.subject}|${item.status}`;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(item);
+            return acc;
+        }, {});
+
+        // Format the data for the DataTable
+        const tableData = Object.entries(groupedData).map(([key, records]) => {
+            // Sort records by date descending
+            records.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const [subject, status] = key.split('|');
+            const latestRecord = records[0];
+
+            return {
+                subject,
+                status,
+                latestDate: latestRecord.date,
+                email: latestRecord.email,
+                nested: records.slice(1) // Remaining records
+            };
+        });
+
+      $(document).ready(function () {
+    // Group data by subject and status
+    const groupedData = jsonData.reduce((acc, item) => {
+        const key = `${item.subject}|${item.status}`;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(item);
+        return acc;
+    }, {});
+
+    // Format the data for the DataTable
+    const tableData = Object.entries(groupedData).map(([key, records]) => {
+        // Sort records by date descending
+        records.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const [subject, status] = key.split('|');
+        const latestRecord = records[0];
+
+        return {
+            subject,
+            status,
+            latestDate: new Intl.DateTimeFormat('en-US', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                timeZoneName: 'short'
+            }).format(new Date(latestRecord.date)), // Format for display
+            email: latestRecord.email,
+            nested: records.slice(1) // Remaining records
+        };
+    });
+
+    const table = $('#example').DataTable({
+        data: tableData,
+        columns: [
+            { data: 'subject' },
+            { data: 'status' },
+            { data: 'latestDate' },
+            { data: 'email' },
+            {
+                data: null,
+                render: function (data) {
+                    return data.nested.length > 0
+                        ? '<button class="toggle-details">Show Details</button>'
+                        : '';
+                },
+                orderable: false
+            }
+        ]
+    });
+
+    // Toggle nested rows
+    $('#example tbody').on('click', '.toggle-details', function () {
         const tr = $(this).closest('tr');
         const row = table.row(tr);
 
@@ -38,3 +174,7 @@
             }
         }
     });
+});
+    </script>
+</body>
+</html>
