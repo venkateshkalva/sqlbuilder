@@ -1,0 +1,40 @@
+ $('#example tbody').on('click', '.toggle-details', function () {
+        const tr = $(this).closest('tr');
+        const row = table.row(tr);
+
+        if (row.child.isShown()) {
+            row.child.hide();
+            tr.removeClass('shown');
+        } else {
+            const nestedData = row.data().nested;
+            if (nestedData.length > 0) {
+                const nestedTable = `
+                    <table class="nested-table">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${nestedData.map(record => `
+                                <tr>
+                                    <td>${record.email}</td>
+                                    <td>${new Intl.DateTimeFormat('en-US', {
+                                        year: 'numeric',
+                                        month: '2-digit',
+                                        day: '2-digit',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        second: '2-digit',
+                                        timeZoneName: 'short'
+                                    }).format(new Date(record.date))}</td>
+                                </tr>`).join('')}
+                        </tbody>
+                    </table>
+                `;
+                row.child(nestedTable).show();
+                tr.addClass('shown');
+            }
+        }
+    });
