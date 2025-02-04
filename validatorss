@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SSN Input Example</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        input { padding: 8px; margin-right: 10px; width: 200px; }
+        button { padding: 8px 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <input type="text" id="ssnInput" placeholder="00-00-0000" disabled>
+    <button id="editBtn">Edit</button>
+    <button id="saveBtn" disabled>Save</button>
+
+    <script>
+        const ssnInput = document.getElementById('ssnInput');
+        const editBtn = document.getElementById('editBtn');
+        const saveBtn = document.getElementById('saveBtn');
+
+        // Initialize from localStorage
+        function initialize() {
+            const savedSSN = localStorage.getItem('ssn');
+            if (savedSSN) {
+                ssnInput.value = `****${savedSSN.slice(-4)}`;
+            }
+        }
+
+        // Format SSN with precise cursor handling
+        function formatSSN(value, cursorPos) {
+            const numbers = value.replace(/\D/g, '');
+            let formatted = '';
+            let newCursorPos = cursorPos;
+            
+            // Build formatted string with hyphens
+            for (let i = 0; i < numbers.length; i++) {
+                if (i === 3 || i === 5) formatted += '-';
+                formatted += numbers[i];
+            }
+
+            // Calculate cursor adjustment
+            const hasAddedDigit = numbers.length > value.replace(/\D/g, '').length;
+            const isDeleting = cursorPos < value.length;
+
+            // Adjust cursor position based on hyphens
+            const beforeCursor = value.slice(0, cursorPos);
+            const numHyphensBefore = (beforeCursor.match(/-/g) || []).length;
+            const numDigitsBefore = beforeCursor.replace(/\D/g, '').length;
+            
+            if (hasAddedDigit) {
+                // Handle automatic hyphen insertion
+                newCursorPos = numDigitsBefore + Math.floor(numDigitsBefore / 3) + 1;
+            } else if (isDeleting) {
+                // Handle hyphen skipping during deletion
+                newCursorPos = numDigitsBefore + Math.floor(numDigitsBefore / 3);
+            }
+
+            // Keep cursor within bounds
+            newCursorPos = Math.min(newCursorPos, formatted.length);
+            
+            return { formatted, newCursorPos };
+        }
+
+        // Toggle edit mode
+        function enableEdit() {
+            ssnInput.disabled = false;
+            const savedSSN = localStorage.getItem('ssn') || '';
+            ssnInput.value = savedSSN.replace(/(\d{3})(\d{2})(\d{4})/, '$1-$2-$3');
+            ssnInput.focus();
+            saveBtn.disabled = false;
+        }
+
+        // Save SSN to localStorage
+        function saveSSN() {
+            const rawSSN = ssnInput.value.replace(/\D/g, '');
+            
+            if (rawSSN.length !== 9) {
+                alert('Please enter a valid 9-digit SSN');
+                return;
+            }
+
+            localStorage.setItem('ssn', rawSSN);
+            ssnInput.value = `****${rawSSN.slice(-4)}`;
+            ssnInput.disabled = true;
+            saveBtn.disabled = true;
+        }
+
+        // Input handler with better cursor management
+        ssnInput.addEventListener('input', (e) => {
+            const start = e.target.selectionStart;
+            const end = e.target.selectionEnd;
+            const result = formatSSN(e.target.value, start);
+            
+            e.target.value = result.formatted;
+            e.target.setSelectionRange(result.newCursorPos, result.newCursorPos);
+        });
+
+        editBtn.addEventListener('click', enableEdit);
+        saveBtn.addEventListener('click', saveSSN);
+
+        // Initial load
+        initialize();
+    </script>
+</body>
+</html>
